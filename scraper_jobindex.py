@@ -2,17 +2,46 @@ import requests
 import lxml.html as lh
 import pandas as pd
 
-# Start your search on JobIndex and then copy the URL below
-#url='https://www.jobindex.dk/jobsoegning/kontor/oekonomi?q=%27financial+controller%27'
-url='https://www.jobindex.dk/jobsoegning/salg/salg?q=%27sales+manager%27'
+def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = printEnd)
+    # Print New Line on Complete
+    if iteration == total: 
+        print()
 
+
+# Start your search on JobIndex and then copy the URL below
+
+# Some examples:
+#url = 'https://www.jobindex.dk/jobsoegning/kontor/oekonomi?q=%27financial+controller%27'
+#url = 'https://www.jobindex.dk/jobsoegning/salg/salg?q=%27sales+manager%27'
+#url = 'https://www.jobindex.dk/jobsoegning'
+#url = 'https://www.jobindex.dk/jobsoegning?q=%27data+scientist%27' 
+
+url = 'https://www.jobindex.dk/jobsoegning/kontor'
 
 # Extracting the number of pages
 url_n = url
 url_list = []
 next_page = True
 
+
 while next_page:
+        
     try:
         page = requests.get(url_n)
         doc = lh.fromstring(page.content)
@@ -20,20 +49,27 @@ while next_page:
         url_n=str(link[0])
         url_list.append(url_n)
         next_page = True
+        print('\rRetrieving number of pages: {} page(s) and counting...'.format(len(url_list)+1), end = '\r')
+        
     except:
         next_page = False
-        print("There are ",len(url_list)+1, "pages listing results for your search")
+        print("\nThere are {} pages listing results for your search".format(len(url_list)+1))
+        
+        
 last = len(url_list)
 
 
 # Extracting job titles and companies for each page
 
-url = url+'&page={}' #adds the page element (with no page number) to the url
+url = url+'?page={}' #adds the page element (with no page number) to the url
 titles=[]
 companies=[]
 info=[]
+
     
 for page_number in range(1, last+1):
+    printProgressBar(page_number, last, prefix = 'Scraping...')
+    #("Scraping page", page_number)
     #Make requests replacing 'page_number' in the curly brackets {} of the URL 
     url_page = url.format(page_number)
     #Create a handle, page, to handle the contents of the website
