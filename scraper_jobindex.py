@@ -1,7 +1,10 @@
 import requests
 import lxml.html as lh
 import pandas as pd
+
 from helpers import printProgressBar
+
+
 # Start your search on JobIndex and then copy the URL below
 
 # Some examples:
